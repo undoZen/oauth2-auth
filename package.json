@@ -1,0 +1,24 @@
+{
+  "name": "oauth2-auth",
+  "version": "0.0.0",
+  "description": "helpers for you to generate auth middlewares for an oauth2 server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/undoZen/oauth2-auth.git"
+  },
+  "keywords": [
+    "oauth2",
+    "auth",
+    "authorization"
+  ],
+  "author": "undoZen <opensource@undozen.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/undoZen/oauth2-auth/issues"
+  },
+  "homepage": "https://github.com/undoZen/oauth2-auth"
+}
