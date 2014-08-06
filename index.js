@@ -1,0 +1,103 @@
+var _ = require('lodash')
+var ef = require('errto')
+var debug = require('debug')('auth')
+var errs = require('errs')
+
+var proto = {};
+
+//auth.pass() 永远让匿名用户可访问
+proto.pass = function () {
+  return function (req, res, next) {
+    req.apiPass = true;
+    next();
+  }
+}
+
+//auth.bearer() 类似 auth()，不同之处在会先验证 access_token，通过后才继续，req 包含 user 和 authInfo
+proto.bearer = function (fn) {
+  var auth = this;
+  var authfn = auth(fn);
+  return function (req, res, next) {
+    auth.preauth(req, res, ef(next, authfn.bind(null, req, res, next)));
+  }
+}
+
+//带有客户端信息的请求可通过
+proto.client = function () {
+  return this.bearer(function (req) {
+    if (req.authInfo && req.authInfo.client) {
+      return true;
+    } else {
+      return errs.create({
+        status: 403,
+        code: 'access_denied',
+        message: "Your auth information doesn't contain information of the client you are using."
+      });
+    }
+  });
+}
+
+//带有 req.user 信息的请求可通过
+proto.user = function () {
+  return this.bearer(function (req) {
+    if (req.user && ['null', '{}'].indexOf(JSON.stringify(req.user)) == -1) {
+      return true;
+    } else {
+      return errs.create({
+        status: 403,
+        code: 'access_denied',
+        message: "You must sign in to get this resource."
+      });
+    }
+  });
+}
+
+proto.scope = function () {
+  var scopes = _.flatten(arguments);
+  return this.bearer(function (req) {
+    if (req.authInfo && _.intersection(scopes, req.authInfo.scope || []).length) {
+      return true;
+    } else {
+      return errs.create({
+        status: 403,
+        code: 'access_denied',
+        message: "You are not allowed to get this resource."
+      });
+    }
+  });
+}
+
+proto.owner = function () {
+  return this.bearer(function (req) {
+    if (req.user && req.user.id === req.params.userId) {
+      return true;
+    } else {
+      return errs.create({
+        status: 403,
+        code: 'access_denied',
+        message: "This is not your own resource."
+      });
+    }
+  });
+}
+
+//auth() 让调用者设定自己的验证逻辑，与 auth.bearer() 不一样的是不需要通过 bearer middleware 从 token 获取用户身份
+exports = module.exports = function (preauth) {
+  var auth = function (fn) {
+    return function (req, res, next) {
+      debug('req.url: %s', req.url);
+      debug('req.user: %j', req.user);
+      debug('req.authInfo: %j', req.authInfo);
+      result = fn(req);
+      if (result instanceof Error) {
+        next(result);
+      } else {
+        req.apiPass = !!result;
+        next();
+      }
+    }
+  }
+  auth.preauth = preauth || function (req, res, next) { next(); };
+  _.extend(auth, proto);
+  return auth;
+}
