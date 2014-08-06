@@ -20,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/undoZen/oauth2-auth/issues"
   },
-  "homepage": "https://github.com/undoZen/oauth2-auth"
+  "homepage": "https://github.com/undoZen/oauth2-auth",
+  "dependencies": {
+    "debug": "^1.0.4",
+    "errs": "^0.3.0",
+    "errto": "^0.2.1",
+    "lodash": "^2.4.1"
+  }
 }
