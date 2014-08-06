@@ -1,6 +1,6 @@
 {
   "name": "oauth2-auth",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "helpers for you to generate auth middlewares for an oauth2 server",
   "main": "index.js",
   "files": [
