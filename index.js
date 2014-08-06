@@ -52,6 +52,7 @@ proto.user = function () {
   });
 }
 
+//当用户所有的 scopes 与接口需要的 scopes 有重合的时候可通过
 proto.scope = function () {
   var scopes = _.flatten(arguments);
   return this.bearer(function (req) {
@@ -67,6 +68,8 @@ proto.scope = function () {
   });
 }
 
+//如果你的 url 设置的是 app.get('/api/user/:userId/privacy')
+//auth.owner() 会让 userId 与当前访问用户匹配的用户通过
 proto.owner = function () {
   return this.bearer(function (req) {
     if (req.user && req.user.id === req.params.userId) {
