@@ -52,7 +52,7 @@ proto.user = function () {
   });
 }
 
-//当用户所有的 scopes 与接口需要的 scopes 有重合的时候可通过
+//当用户带有的 scopes 与接口需要的 scopes 有重合的时候可通过
 proto.scope = function () {
   var scopes = _.flatten(arguments);
   return this.bearer(function (req) {
