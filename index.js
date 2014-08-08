@@ -88,6 +88,8 @@ proto.owner = function () {
 exports = module.exports = function (preauth) {
   var auth = function (fn) {
     return function (req, res, next) {
+      if (req.apiPass) return next(); //可能已经做过验证了
+      debug('req.params: %j', req.params);
       debug('req.url: %s', req.url);
       debug('req.user: %j', req.user);
       debug('req.authInfo: %j', req.authInfo);
