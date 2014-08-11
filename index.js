@@ -13,18 +13,9 @@ proto.pass = function () {
   }
 }
 
-//auth.bearer() 类似 auth()，不同之处在会先验证 access_token，通过后才继续，req 包含 user 和 authInfo
-proto.bearer = function (fn) {
-  var auth = this;
-  var authfn = auth(fn);
-  return function (req, res, next) {
-    auth.preauth(req, res, ef(next, authfn.bind(null, req, res, next)));
-  }
-}
-
 //带有客户端信息的请求可通过
 proto.client = function () {
-  return this.bearer(function (req) {
+  return this(function (req) {
     if (req.authInfo && req.authInfo.client) {
       return true;
     } else {
@@ -39,7 +30,7 @@ proto.client = function () {
 
 //带有 req.user 信息的请求可通过
 proto.user = function () {
-  return this.bearer(function (req) {
+  return this(function (req) {
     if (req.user && ['null', '{}'].indexOf(JSON.stringify(req.user)) == -1) {
       return true;
     } else {
@@ -55,7 +46,7 @@ proto.user = function () {
 //当用户带有的 scopes 与接口需要的 scopes 有重合的时候可通过
 proto.scope = function () {
   var scopes = _.flatten(arguments);
-  return this.bearer(function (req) {
+  return this(function (req) {
     if (req.authInfo && _.intersection(scopes, req.authInfo.scope || []).length) {
       return true;
     } else {
@@ -71,7 +62,7 @@ proto.scope = function () {
 //如果你的 url 设置的是 app.get('/api/user/:userId/privacy')
 //auth.owner() 会让 userId 与当前访问用户匹配的用户通过
 proto.owner = function () {
-  return this.bearer(function (req) {
+  return this(function (req) {
     if (req.user && req.user.id === req.params.userId) {
       return true;
     } else {
@@ -86,7 +77,7 @@ proto.owner = function () {
 
 //auth() 让调用者设定自己的验证逻辑，与 auth.bearer() 不一样的是不需要通过 bearer middleware 从 token 获取用户身份
 exports = module.exports = function (preauth) {
-  var auth = function (fn) {
+  var nopreauth = function nopreauth(fn) {
     return function (req, res, next) {
       if (req.authPass) return next(); //可能已经做过验证了
       debug('req.params: %j', req.params);
@@ -102,6 +93,13 @@ exports = module.exports = function (preauth) {
       }
     }
   }
+  var auth = function (fn) {
+    var authfn = nopreauth(fn);
+    return function (req, res, next) {
+      auth.preauth(req, res, ef(next, authfn.bind(null, req, res, next)));
+    }
+  }
+  auth.nopreauth = nopreauth;
   auth.preauth = preauth || function (req, res, next) { next(); };
   _.extend(auth, proto);
   return auth;

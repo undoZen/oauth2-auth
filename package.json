@@ -7,8 +7,13 @@
     "index.js"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tape test/*.js"
   },
+  "files": [
+    "index.js",
+    "LICENSE",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/undoZen/oauth2-auth.git"
@@ -29,5 +34,8 @@
     "errs": "^0.3.0",
     "errto": "^0.2.1",
     "lodash": "^2.4.1"
+  },
+  "devDependencies": {
+    "tape": "^2.14.0"
   }
 }
