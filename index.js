@@ -8,7 +8,7 @@ var proto = {};
 //auth.pass() 永远让匿名用户可访问
 proto.pass = function () {
   return function (req, res, next) {
-    req.apiPass = true;
+    req.authPass = true;
     next();
   }
 }
@@ -88,7 +88,7 @@ proto.owner = function () {
 exports = module.exports = function (preauth) {
   var auth = function (fn) {
     return function (req, res, next) {
-      if (req.apiPass) return next(); //可能已经做过验证了
+      if (req.authPass) return next(); //可能已经做过验证了
       debug('req.params: %j', req.params);
       debug('req.url: %s', req.url);
       debug('req.user: %j', req.user);
@@ -97,7 +97,7 @@ exports = module.exports = function (preauth) {
       if (result instanceof Error) {
         next(result);
       } else {
-        req.apiPass = !!result;
+        req.authPass = !!result;
         next();
       }
     }
